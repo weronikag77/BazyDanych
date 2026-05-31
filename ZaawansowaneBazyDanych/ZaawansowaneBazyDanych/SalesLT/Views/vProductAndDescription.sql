@@ -15,7 +15,6 @@ FROM [SalesLT].[Product] p
     ON pm.[ProductModelID] = pmx.[ProductModelID]
     INNER JOIN [SalesLT].[ProductDescription] pd
     ON pmx.[ProductDescriptionID] = pd.[ProductDescriptionID];
-
 GO
 CREATE UNIQUE CLUSTERED INDEX [IX_vProductAndDescription]
     ON [SalesLT].[vProductAndDescription]([Culture] ASC, [ProductID] ASC);

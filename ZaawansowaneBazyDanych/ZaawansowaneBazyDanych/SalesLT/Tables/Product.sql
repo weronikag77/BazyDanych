@@ -28,3 +28,40 @@
     CONSTRAINT [AK_Product_rowguid] UNIQUE NONCLUSTERED ([rowguid] ASC)
 );
 
+
+GO
+create trigger SalesLT.trg_ProductPriceHistory 
+on SalesLT.Product
+after UPDATE
+AS
+BEGIN
+if update(ListPrice)
+    BEGIN
+    insert into SalesLT.ProductPriceHistory (ProductID, OldPrice, NewPrice)
+    select i.ProductID, d.ListPrice as OldPrice, i.ListPrice as NewPrice
+    from inserted i inner join deleted d on i.ProductID = d.ProductID
+    where i.ListPrice != d.ListPrice
+    END
+END;
+GO
+
+create trigger SalesLT.trg_CheckPriceIncrease
+on SalesLT.Product
+instead of update
+AS
+begin 
+set nocount on;
+    insert into SalesLT.ProductUpdateLog (ProductID, OldPrice, AttemptedPrice)
+    select i.ProductID, d.ListPrice, i.ListPrice
+    from inserted i
+    join deleted d ON i.ProductID = d.ProductID
+    where i.ListPrice > (d.ListPrice * 1.2);
+
+    update p
+    set p.ListPrice = i.ListPrice,
+        p.ModifiedDate = GETDATE()
+    from SalesLT.Product p
+    join inserted i ON p.ProductID = i.ProductID
+    join deleted d ON i.ProductID = d.ProductID
+    where i.ListPrice <= (d.ListPrice * 1.2);
+end;

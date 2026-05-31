@@ -1,0 +1,3 @@
+﻿CREATE TYPE [233082].[W2_surname]
+    FROM NVARCHAR (50) NOT NULL;
+
